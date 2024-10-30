@@ -98,7 +98,7 @@ class Trainer:
             torch.nn.utils.clip_grad_norm_(model.parameters(), config.grad_norm_clip)
             self.optimizer.step()
 
-            self.trigger_callbacks('on_batch_end')
+            self.trigger_callbacks('on_batch_end') # I'm assuming we'd just add our checkpointing code as a callback here
             self.iter_num += 1
             tnow = time.time()
             self.iter_dt = tnow - self.iter_time
