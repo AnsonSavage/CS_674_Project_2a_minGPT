@@ -1,30 +1,36 @@
 from torch.utils.data import Dataset
 import json
+import os
+import pickle
+from tqdm import tqdm
 
 class JSONLDataset(Dataset):
-    def __init__(self, path_to_jsonl, length=None):
+    def __init__(self, path_to_jsonl, length=10000):
         self.path_to_jsonl = path_to_jsonl
-        # Count number of lines in the file
-        if length is None:
-            with open(path_to_jsonl, 'r') as f:
-                self.length = sum(1 for line in f)
+        self.pkl_path = path_to_jsonl.replace('.jsonl', '.pkl')
+
+        if length is not None:
+            self.pkl_path = self.pkl_path.replace('.pkl', f'size_{length}.pkl')
+
+        # Check if a pickle file exists for faster loading
+        if os.path.exists(self.pkl_path):
+            # Load the dataset from the pickle file
+            with open(self.pkl_path, 'rb') as f:
+                self.items = pickle.load(f)
         else:
-            self.length = length
-        
-        self.line_cache = {}
-    
+            # Load the dataset from the jsonl file and cache it in a pickle file
+            self.items = []
+            with open(path_to_jsonl, 'r') as f:
+                for line in tqdm(f):
+                    self.items.append(json.loads(line)['text'])
+                    if length is not None and len(self.items) >= length:
+                        break
+            # Save the loaded data to a pickle file for faster future loading
+            with open(self.pkl_path, 'wb') as f:
+                pickle.dump(self.items, f)
+
     def __len__(self):
-        return self.length
+        return len(self.items)
     
     def __getitem__(self, idx):
-        if idx in self.line_cache:
-            return self.line_cache[idx]
-
-        with open(self.path_to_jsonl, 'r') as f:
-            for i, line in enumerate(f):
-                if i == idx:
-                    json_obj = json.loads(line.strip())
-                    value = json_obj['text']
-                    self.line_cache[idx] = value
-                    return value
-                    
+        return self.items[idx]
