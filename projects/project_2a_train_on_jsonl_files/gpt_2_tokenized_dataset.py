@@ -31,6 +31,8 @@ class GPT2TokenizedDataset(Dataset):
             if len(tokens) > self.block_size:
                 start_index = torch.randint(0, len(tokens) - self.block_size, (1,)).item()
                 tokens = tokens[start_index:start_index + self.block_size]
+        
+        tokens = tokens[:self.block_size] # Ensure that the tokenized sequence is of length block_size
         return tokens[:-1], tokens[1:]
     
     def get_vocab_size(self):

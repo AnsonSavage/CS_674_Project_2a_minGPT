@@ -67,13 +67,17 @@ if __name__ == '__main__':
         if trainer.iter_num % evaluate_every_n == 0:
             # Evaluate the model
             print(trainer.loss_history[-1])
-            # Create a graph of the loss history
-            plt.plot(trainer.loss_history)
-            plt.xlabel('Iteration')
-            plt.ylabel('Loss')
-            plt.title('Loss history')
-            plt.savefig(os.path.join(config.system.work_dir, f'loss_history_iteration_{trainer.iter_num}.png'))
-            plt.clf()
+            
+            try:
+                # Create a graph of the loss history
+                plt.plot(trainer.loss_history)
+                plt.xlabel('Iteration')
+                plt.ylabel('Loss')
+                plt.title('Loss history')
+                plt.savefig(os.path.join(config.system.work_dir, f'loss_history_iteration_{trainer.iter_num}.png'))
+                plt.clf()
+            except Exception as e:
+                print(f'Error creating loss history graph: {e}')
 
 
 

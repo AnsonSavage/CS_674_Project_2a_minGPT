@@ -3,5 +3,8 @@ __pycache__/
 *.swp
 .env
 .pylintrc
-projects/project_2a_train_on_jsonl_files/out/project_2a_train_on_jsonl_files/checkpoint_0.pth
+*.pth
+*.png
+*.log
 projects/project_2a_train_on_jsonl_files/out/project_2a_train_on_jsonl_files/config.json
+projects/project_2a_train_on_jsonl_files/out/project_2a_train_on_jsonl_files/iteration_0/args.txt
