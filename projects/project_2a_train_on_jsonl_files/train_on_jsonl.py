@@ -1,6 +1,7 @@
 from jsonl_dataset import JSONLDataset
 from gpt_2_tokenized_dataset import GPT2TokenizedDataset
 import os
+import matplotlib.pyplot as plt
 
 import sys
 sys.path.append('/home/ansonsav/cs_674/project_2a_minGPT/minGPT')
@@ -42,7 +43,7 @@ if __name__ == '__main__':
     set_seed(config.system.seed)
 
     # create the data
-    dataset = GPT2TokenizedDataset(JSONLDataset(config.data_path))
+    dataset = GPT2TokenizedDataset(JSONLDataset(config.data_path, length=None)) # length=None means use all the data
 
     config.model.vocab_size = dataset.get_vocab_size()
     config.model.block_size = dataset.get_block_size()
@@ -56,7 +57,7 @@ if __name__ == '__main__':
     def batch_end_callback(trainer: Trainer):
         print_every_n = 100
         save_checkpoint_every_n = 30000
-        evaluate_every_n = 10000
+        evaluate_every_n = 5000
         if trainer.iter_num % print_every_n == 0:
             print(f'iteration: {trainer.iter_num}')
         
@@ -66,6 +67,14 @@ if __name__ == '__main__':
         if trainer.iter_num % evaluate_every_n == 0:
             # Evaluate the model
             print(trainer.loss_history[-1])
+            # Create a graph of the loss history
+            plt.plot(trainer.loss_history)
+            plt.xlabel('Iteration')
+            plt.ylabel('Loss')
+            plt.title('Loss history')
+            plt.savefig(os.path.join(config.system.work_dir, f'loss_history_iteration_{trainer.iter_num}.png'))
+            plt.clf()
+
 
 
     trainer.set_callback('on_batch_end', batch_end_callback)

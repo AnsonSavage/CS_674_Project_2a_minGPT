@@ -28,26 +28,32 @@ class Trainer:
         C.grad_norm_clip = 1.0
         return C
 
-    def __init__(self, config, model, train_dataset):
-        self.config = config
-        self.model = model
-        self.optimizer = None
+    def __init__(self, config, model, train_dataset, checkpoint_path=None):
         self.train_dataset = train_dataset
-        self.callbacks = defaultdict(list)
-
-        # determine the device we'll train on
-        if config.device == 'auto':
-            self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        if checkpoint_path is not None:
+            print('Loading checkpoint from', checkpoint_path)
+            print('Ignoring passed config and model')
+            self.load_checkpoint(checkpoint_path)
         else:
-            self.device = config.device
-        self.model = self.model.to(self.device)
-        print("running on device", self.device)
+            self.config = config
+            self.model = model
+            # setup the optimizer
+            self.optimizer = model.configure_optimizers(config)
+            self.callbacks = defaultdict(list)
 
-        # variables that will be assigned to trainer class later for logging and etc
-        self.iter_num = 0
-        self.iter_time = 0.0
-        self.iter_dt = 0.0
-        self.loss_history = []
+            # determine the device we'll train on
+            if config.device == 'auto':
+                self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            else:
+                self.device = config.device
+            self.model = self.model.to(self.device)
+            print("running on device", self.device)
+
+            # variables that will be assigned to trainer class later for logging and etc
+            self.iter_num = 0
+            self.iter_time = 0.0
+            self.iter_dt = 0.0
+            self.loss_history = []
 
     def add_callback(self, onevent: str, callback):
         self.callbacks[onevent].append(callback)
@@ -69,6 +75,7 @@ class Trainer:
             'iter_time': self.iter_time,
             'iter_dt': self.iter_dt,
             'config': self.config,
+            'loss_history': self.loss_history,
         }, path)
     
     def load_checkpoint(self, path):
@@ -79,12 +86,10 @@ class Trainer:
         self.iter_time = checkpoint['iter_time']
         self.iter_dt = checkpoint['iter_dt']
         self.config = checkpoint['config']
+        self.loss_history = checkpoint['loss_history']
 
     def run(self):
         model, config = self.model, self.config
-
-        # setup the optimizer
-        self.optimizer = model.configure_optimizers(config)
 
         # setup the dataloader
         train_loader = DataLoader(

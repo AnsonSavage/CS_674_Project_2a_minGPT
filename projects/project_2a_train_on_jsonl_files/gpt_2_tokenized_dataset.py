@@ -23,13 +23,14 @@ class GPT2TokenizedDataset(Dataset):
     def __len__(self):
         return len(self.text_based_dataset)
     
-    def __getitem__(self, idx):
-        tokens = torch.tensor(self.tokenizer(self.text_based_dataset[idx], truncation=True, max_length=self.block_size)['input_ids'])
-
-        # TODO: we can consider randomly sampling a subsequence of tokens here
-        # if len(tokens) > self.block_size:
-        #     # Randomly sample 
-        #     tokens = tokens[:self.block_size]
+    def __getitem__(self, idx, random_subsequence=True):
+        if not random_subsequence:
+            tokens = torch.tensor(self.tokenizer(self.text_based_dataset[idx], truncation=True, max_length=self.block_size)['input_ids'])
+        else:
+            tokens = torch.tensor(self.tokenizer(self.text_based_dataset[idx])['input_ids'])
+            if len(tokens) > self.block_size:
+                start_index = torch.randint(0, len(tokens) - self.block_size, (1,)).item()
+                tokens = tokens[start_index:start_index + self.block_size]
         return tokens[:-1], tokens[1:]
     
     def get_vocab_size(self):
