@@ -1,5 +1,6 @@
 from jsonl_dataset import JSONLDataset
 from gpt_2_tokenized_dataset import GPT2TokenizedDataset
+import os
 
 import sys
 sys.path.append('/home/ansonsav/cs_674/project_2a_minGPT/minGPT')
@@ -22,12 +23,14 @@ def get_config():
 
     # model
     C.model = GPT.get_default_config()
-    C.model.model_type = 'gpt-nano' # This is really small just for initial testing purposes :)
+    C.model.model_type = 'gpt2'
 
     # trainer
     C.trainer = Trainer.get_default_config()
     # Can overwrite things like learning rate here
     C.trainer.learning_rate = 5e-4
+    C.trainer.batch_size = 1
+    C.trainer.num_workers = 1
 
     return C
 
@@ -36,13 +39,10 @@ if __name__ == '__main__':
     config = get_config()
 
     setup_logging(config)
-    set_seed(3407)
-
-
-
+    set_seed(config.system.seed)
 
     # create the data
-    dataset = GPT2TokenizedDataset(JSONLDataset(config.data))
+    dataset = GPT2TokenizedDataset(JSONLDataset(config.data_path))
 
     config.model.vocab_size = dataset.get_vocab_size()
     config.model.block_size = dataset.get_block_size()
@@ -52,10 +52,21 @@ if __name__ == '__main__':
 
     # create the trainer
     trainer = Trainer(config.trainer, model, dataset)
-    trainer.add_callback_every_n_batches(100, lambda trainer: print(trainer.iter_num))
-    # Save the model every 1000 iterations
-    trainer.add_callback_every_n_batches(1000, trainer.checkpoint('model.pth'))
+
+    def batch_end_callback(trainer: Trainer):
+        print_every_n = 100
+        save_checkpoint_every_n = 30000
+        evaluate_every_n = 10000
+        if trainer.iter_num % print_every_n == 0:
+            print(f'iteration: {trainer.iter_num}')
+        
+        if trainer.iter_num % save_checkpoint_every_n == 0:
+            trainer.checkpoint(os.path.join(config.system.work_dir, f'checkpoint_{trainer.iter_num}.pth'))
+        
+        if trainer.iter_num % evaluate_every_n == 0:
+            # Evaluate the model
+            print(trainer.loss_history[-1])
 
 
-    # train
-    trainer.train()
+    trainer.set_callback('on_batch_end', batch_end_callback)
+    trainer.run()

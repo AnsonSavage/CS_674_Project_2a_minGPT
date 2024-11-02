@@ -9,7 +9,6 @@ from collections import defaultdict
 import torch
 from torch.utils.data.dataloader import DataLoader
 from mingpt.utils import CfgNode as CN
-import os
 
 class Trainer:
 
@@ -48,19 +47,11 @@ class Trainer:
         self.iter_num = 0
         self.iter_time = 0.0
         self.iter_dt = 0.0
-
-        self.legal_callbacks = ['on_batch_end', 'on_epoch_end']
+        self.loss_history = []
 
     def add_callback(self, onevent: str, callback):
         self.callbacks[onevent].append(callback)
     
-    def add_callback_every_n_batches(self, n: int, callback):
-        def wrapped(trainer):
-            if trainer.iter_num % n == 0:
-                callback(trainer)
-        self.add_callback('on_batch_end', wrapped)
-        # self.callbacks
-
     def set_callback(self, onevent: str, callback):
         self.callbacks[onevent] = [callback]
 
@@ -71,7 +62,6 @@ class Trainer:
     def checkpoint(self, path):
         assert path.endswith('.pth'), "checkpoint path should be a .pth file"
         path.replace('.pth', f'_{self.iter_num}.pth')
-        path = os.path.join(self.config.system.work_dir, path)
         torch.save({
             'model': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
@@ -80,6 +70,15 @@ class Trainer:
             'iter_dt': self.iter_dt,
             'config': self.config,
         }, path)
+    
+    def load_checkpoint(self, path):
+        checkpoint = torch.load(path)
+        self.model.load_state_dict(checkpoint['model'])
+        self.optimizer.load_state_dict(checkpoint['optimizer'])
+        self.iter_num = checkpoint['iter_num']
+        self.iter_time = checkpoint['iter_time']
+        self.iter_dt = checkpoint['iter_dt']
+        self.config = checkpoint['config']
 
     def run(self):
         model, config = self.model, self.config
@@ -119,6 +118,7 @@ class Trainer:
             # backprop and update the parameters
             model.zero_grad(set_to_none=True)
             self.loss.backward()
+            self.loss_history.append(self.loss.item())
             torch.nn.utils.clip_grad_norm_(model.parameters(), config.grad_norm_clip)
             self.optimizer.step()
 
