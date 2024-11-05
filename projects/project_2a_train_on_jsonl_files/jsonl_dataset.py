@@ -22,7 +22,9 @@ class JSONLDataset(Dataset):
             self.items = []
             with open(path_to_jsonl, 'r') as f:
                 for line in tqdm(f):
-                    self.items.append(json.loads(line)['text'])
+                    json_dict = json.loads(line)
+                    if 'text' in json_dict and json_dict['text'] is not None and len(json_dict['text'].strip()) > 0:
+                        self.items.append(json.loads(line)['text'])
                     if length is not None and len(self.items) >= length:
                         break
             # Save the loaded data to a pickle file for faster future loading

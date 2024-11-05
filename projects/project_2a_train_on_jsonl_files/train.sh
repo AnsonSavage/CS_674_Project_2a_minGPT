@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --time=10:00:00           # Walltime
+#SBATCH --time=12:00:00           # Walltime
 #SBATCH --ntasks=1              # Number of processor cores (i.e., tasks)
 #SBATCH --gpus=1                  # Number of GPUs
 #SBATCH --mem-per-cpu=262144M       # Memory per CPU core

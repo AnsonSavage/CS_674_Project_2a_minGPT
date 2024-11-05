@@ -17,7 +17,7 @@ args = parser.parse_args()
 checkpoint_dict = torch.load(args.checkpoint_file, map_location=torch.device('cpu'), pickle_module=pickle)
 
 # Extract and average loss history
-loss_history = checkpoint_dict['loss_history']
+loss_history = checkpoint_dict['loss_history'][1:]  # Skip the first element (0th iteration)
 averaged_loss_history = [
     sum(loss_history[i:i + args.average_over]) / len(loss_history[i:i + args.average_over]) 
     for i in range(0, len(loss_history), args.average_over)
