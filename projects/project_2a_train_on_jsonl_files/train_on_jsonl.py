@@ -16,7 +16,7 @@ def get_config():
     # system
     C.system = CN()
     C.system.seed = 3407
-    C.system.work_dir = './out/project_2a_train_on_jsonl_files'
+    C.system.work_dir = './out/project_2a_train_on_jsonl_files/mini'
 
     # data
     C.data = GPT2TokenizedDataset.get_default_config()
@@ -24,7 +24,8 @@ def get_config():
 
     # model
     C.model = GPT.get_default_config()
-    C.model.model_type = 'gpt2'
+    # C.model.model_type = 'gpt2'
+    C.model.model_type = 'gpt-mini'
 
     # trainer
     C.trainer = Trainer.get_default_config()
@@ -56,8 +57,8 @@ if __name__ == '__main__':
 
     def batch_end_callback(trainer: Trainer):
         print_every_n = 100
-        save_checkpoint_every_n = 30000
-        evaluate_every_n = 5000
+        save_checkpoint_every_n = 10000
+        evaluate_every_n = 10000
         if trainer.iter_num % print_every_n == 0:
             print(f'iteration: {trainer.iter_num}')
         

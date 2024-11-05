@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #SBATCH --time=10:00:00           # Walltime
-#SBATCH --ntasks=2              # Number of processor cores (i.e., tasks)
+#SBATCH --ntasks=1              # Number of processor cores (i.e., tasks)
 #SBATCH --gpus=1                  # Number of GPUs
-#SBATCH --mem-per-cpu=65536M       # Memory per CPU core
+#SBATCH --mem-per-cpu=262144M       # Memory per CPU core
 #SBATCH -J "train_gpt2"   # Job name
 #SBATCH --mail-user=ansonsav@byu.edu             # Email address
 #SBATCH --mail-type=BEGIN,END,FAIL              # Email types

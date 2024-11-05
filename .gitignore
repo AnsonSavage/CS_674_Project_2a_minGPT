@@ -8,3 +8,8 @@ __pycache__/
 *.log
 projects/project_2a_train_on_jsonl_files/out/project_2a_train_on_jsonl_files/config.json
 projects/project_2a_train_on_jsonl_files/out/project_2a_train_on_jsonl_files/iteration_0/args.txt
+projects/project_2a_train_on_jsonl_files/out/project_2a_train_on_jsonl_files/args.txt
+projects/project_2a_train_on_jsonl_files/out/project_2a_train_on_jsonl_files/iteration_1/args.txt
+*.out
+projects/project_2a_train_on_jsonl_files/out/project_2a_train_on_jsonl_files/mini/args.txt
+*config.json

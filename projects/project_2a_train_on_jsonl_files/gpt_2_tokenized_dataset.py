@@ -23,11 +23,11 @@ class GPT2TokenizedDataset(Dataset):
     def __len__(self):
         return len(self.text_based_dataset)
     
-    def __getitem__(self, idx, random_subsequence=True):
+    def __getitem__(self, idx, random_subsequence=False):
         if not random_subsequence:
-            tokens = torch.tensor(self.tokenizer(self.text_based_dataset[idx], truncation=True, max_length=self.block_size)['input_ids'])
+            tokens = torch.tensor(self.tokenizer(self.text_based_dataset[idx], truncation=True, max_length=self.block_size)['input_ids'], dtype=torch.long)
         else:
-            tokens = torch.tensor(self.tokenizer(self.text_based_dataset[idx])['input_ids'])
+            tokens = torch.tensor(self.tokenizer(self.text_based_dataset[idx])['input_ids'], dtype=torch.long)
             if len(tokens) > self.block_size:
                 start_index = torch.randint(0, len(tokens) - self.block_size, (1,)).item()
                 tokens = tokens[start_index:start_index + self.block_size]
