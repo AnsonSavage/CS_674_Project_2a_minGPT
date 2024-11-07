@@ -15,7 +15,10 @@ from . import (
     textsynth,
     vllm_causallms,
     vllm_vlms,
+    min_gpt,
 )
+
+import models.min_gpt
 
 
 # TODO: implement __all__
