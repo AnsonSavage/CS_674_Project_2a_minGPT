@@ -32,7 +32,7 @@ class MinGPTEval(LM):
             until = param['until'] # A list of tokens indicating when to stop generating
             max_gen_toks = param['max_gen_toks'] # The maximum number of tokens to generate otherwise
 
-            tokens = torch.tensor(self.tokenizer(prompt)['input_ids'], dtype=torch.long).unsqueeze(0)
+            tokens = self.tokenize(prompt)
             for _ in range(max_gen_toks):
                 next_token = self.model.generate_next_token(tokens)
                 tokens = torch.cat((tokens, next_token), dim=1)
@@ -42,10 +42,21 @@ class MinGPTEval(LM):
             total_output.append(self.tokenizer.decode(tokens[0]))
 
         return total_output
+
+    def tokenize(self, string):
+        tokens = torch.tensor(self.tokenizer(string)['input_ids'], dtype=torch.long).unsqueeze(0)
+        return tokens
     
     def loglikelihood(self, requests) -> List[Tuple[float | bool]]:
         for request in requests:
             context, expected_output = request.args
+            context_tokens = self.tokenize(context)
+            expected_output_tokens = self.tokenize(expected_output)
+            generated_tokens = []
+            while len(generated_tokens) < len(expected_output_tokens):
+                next_token = self.model.generate_next_token(context_tokens)
+                generated_tokens.append(next_token)
+                context_tokens = torch.cat((context_tokens, next_token), dim=1)
 
     def loglikelihood_rolling(self, requests) -> List[float]:
         pass
