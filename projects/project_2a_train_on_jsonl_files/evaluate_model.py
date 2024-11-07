@@ -3,7 +3,7 @@ import torch
 import sys
 sys.path.append('/home/ansonsav/cs_674/project_2a_minGPT/minGPT')
 sys.path.append('/home/ansonsav/cs_674/project_2a_minGPT/minGPT/lm_eval/models')
-from mingpt.model import GPT
+from min_gpt import MinGPTEval
 from jsonl_dataset import JSONLDataset
 from gpt_2_tokenized_dataset import GPT2TokenizedDataset
 from mingpt.model import GPT
@@ -13,6 +13,10 @@ from transformers import GPT2Tokenizer
 
 
 from mingpt.utils import set_seed, setup_logging, CfgNode as CN
+
+class DummyInstance:
+    def __init__(self, args) -> None:
+        self.args = args
 
 def get_config():
     C = CN()
@@ -58,10 +62,14 @@ if __name__ == '__main__':
     checkpoint = torch.load("/home/ansonsav/cs_674/project_2a_minGPT/minGPT/projects/project_2a_train_on_jsonl_files/out/project_2a_train_on_jsonl_files/iteration_3/checkpoint_1960000.pth")
     model.load_state_dict(checkpoint['model'])
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
-    input_tokens = torch.tensor(tokenizer("The quick brown fox", truncation=True, max_length=1024)['input_ids'], dtype=torch.long).unsqueeze(0)
-    output_tokens = model.generate(input_tokens, 100)
-    output_text = tokenizer.decode(output_tokens[0])
-    print(output_text)
+    # input_tokens = torch.tensor(tokenizer("The quick brown fox", truncation=True, max_length=1024)['input_ids'], dtype=torch.long).unsqueeze(0)
+    # output_tokens = model.generate(input_tokens, 100)
+    # output_text = tokenizer.decode(output_tokens[0])
+    # print(output_text)
+    evaluator = MinGPTEval(model, tokenizer)
+    results = evaluator.generate_until([DummyInstance(("The quick brown fox", {"until": [".", "\n\n"], "max_gen_toks": 200}))])
+    print(results)
+
 
 
 def evaluate_mingpt_hellaswag(model_path):

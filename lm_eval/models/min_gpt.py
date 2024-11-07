@@ -10,25 +10,25 @@ from tqdm import tqdm
 from lm_eval.api.model import LM, TemplateLM
 from lm_eval.models.huggingface import HFLM
 from lm_eval.api.registry import register_model
-from lm_eval.api.instance import Instance
-from transformers import GPT2Tokenizer
-from model import GPT
+# from lm_eval.api.instance import Instance
+# from transformers import GPT2Tokenizer
+# from model import GPT
 
 
-@register_model("min_gpt", "mingpt", "min-gpt")
+@register_model("min-gpt")
 class MinGPTEval(LM):
-    def __init__(self, model: GPT, tokenizer: GPT2Tokenizer) -> None:
+    # def __init__(self, model: GPT, tokenizer: GPT2Tokenizer) -> None:
+    def __init__(self, model, tokenizer) -> None:
         super().__init__()
         self.model = model
-        self.tokenizer = model.tokenizer
+        self.tokenizer = tokenizer
     
-    def generate_until(self, requests: list[Instance]) -> List[str]:
-        prompts = [r.args[0] for r in requests]
-        params = [r.args[1] for r in requests]
+    def generate_until(self, requests: list) -> List[str]:
+        print(requests)
         total_output = []
 
-        for i, prompt in enumerate(prompts):
-            param = params[i]
+        for request in requests:
+            prompt, param = request.args
             until = param['until'] # A list of tokens indicating when to stop generating
             max_gen_toks = param['max_gen_toks'] # The maximum number of tokens to generate otherwise
 
@@ -44,4 +44,8 @@ class MinGPTEval(LM):
         return total_output
     
     def loglikelihood(self, requests) -> List[Tuple[float | bool]]:
-        return super().loglikelihood(requests)
+        for request in requests:
+            context, expected_output = request.args
+
+    def loglikelihood_rolling(self, requests) -> List[float]:
+        pass
