@@ -1,4 +1,3 @@
-import random
 from typing import List, Tuple
 import torch
 import torch.nn.functional as F
@@ -27,7 +26,6 @@ class MinGPTEval(LM):
     def generate_until(self, requests: list) -> List[str]:
         # Each item in requests has a .args which is : Tuple[str, dict]
         # The first string is the prompt and the second dict is the parameters
-        print(requests)
         total_output = []
 
         for request in requests:
@@ -54,7 +52,6 @@ class MinGPTEval(LM):
         # Each item in requests has a .args which is : Tuple[str, str]
         # The first string is the context and the second string is the expected output
         
-        # Pretty print the requests
         response = []
 
         for request in requests:
@@ -67,9 +64,7 @@ class MinGPTEval(LM):
                 total_input = total_context[:, :-1] # Remove the last token
 
                 generated_output_logits, _ = self.model(total_input)
-                print(generated_output_logits.shape)
                 generated_output_logits = generated_output_logits[:, -len(expected_output_tokens[0]):] # Only take the logits corresponding to the expected output
-                print(generated_output_logits.shape)
                 assert generated_output_logits.shape[2] == self.tokenizer.vocab_size, "The number of logits should be equal to the vocab size"
 
                 # We now have to figure out which of these logits correspond to the expected output
@@ -83,8 +78,6 @@ class MinGPTEval(LM):
                 # The first argument is the dimension to gather from
                 # The second argument is the indices to gather
                 # The third argument is the dimension to gather into
-                print(log_likelihoods_of_generated_output_logits.shape)
-                print(expected_output_tokens.shape)
                 log_likelihoods_of_expected_output = torch.gather(log_likelihoods_of_generated_output_logits, 2, expected_output_tokens.unsqueeze(2)).squeeze(2) # We unsqueeze the expected_output_tokens so that the number of dimensions between the input and the index remains the same
                 # If it was the greedy response, then the argmax along the last dimension of the log_likelihoods_of_generated_output_logits would be the expected_output_tokens
                 is_greedy = torch.equal(log_likelihoods_of_generated_output_logits.argmax(dim=2), expected_output_tokens)

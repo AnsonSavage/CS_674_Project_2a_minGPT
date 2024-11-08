@@ -72,7 +72,7 @@ def get_config():
 
 
 
-def evaluate_mingpt_hellaswag(model_path):
+def evaluate_mingpt(model_path, tasks):
     config = get_config()
 
     setup_logging(config)
@@ -90,13 +90,20 @@ def evaluate_mingpt_hellaswag(model_path):
     lm.load_state_dict(checkpoint['model'])
     results = evaluator.simple_evaluate(
         model=MinGPTEval(lm, GPT2Tokenizer.from_pretrained('gpt2')),
-        tasks=["hellaswag"],
+        tasks=tasks,
         num_fewshot=0,
         batch_size=32,
         limit=10,
     )
-    return results['results']['hellaswag']['acc,none']
+    return results['results']
 
-score = evaluate_mingpt_hellaswag("/home/ansonsav/cs_674/project_2a_minGPT/minGPT/projects/project_2a_train_on_jsonl_files/out/project_2a_train_on_jsonl_files/iteration_3/checkpoint_1960000.pth")
-print(score)
+tasks = ["boolq", "hellaswag", "anli", "arc_easy", "copa", "rte", "cb"]
+results = evaluate_mingpt("/home/ansonsav/cs_674/project_2a_minGPT/minGPT/projects/project_2a_train_on_jsonl_files/out/project_2a_train_on_jsonl_files/iteration_3/checkpoint_1960000.pth", tasks)
+print(results)
 
+for task in tasks:
+    print(f"Task: {task}")
+    try:
+        print(f"Accuracy: {results[task]['acc,none']}")
+    except KeyError as e:
+        print(e)
