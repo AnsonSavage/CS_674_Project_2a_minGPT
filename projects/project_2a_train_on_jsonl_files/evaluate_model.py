@@ -1,3 +1,6 @@
+import argparse
+import os
+import glob
 from lm_eval import evaluator
 import torch
 import sys
@@ -7,7 +10,6 @@ from min_gpt import MinGPTEval
 from jsonl_dataset import JSONLDataset
 from gpt_2_tokenized_dataset import GPT2TokenizedDataset
 from mingpt.model import GPT
-from mingpt.trainer import Trainer
 # from min_gpt import MinGPTEval
 from transformers import GPT2Tokenizer
 
@@ -32,43 +34,7 @@ def get_config():
 
     # model
     C.model = GPT.get_default_config()
-    # C.model.model_type = 'gpt2'
     C.model.model_type = 'gpt-mini'
-
-    # trainer
-    C.trainer = Trainer.get_default_config()
-    # Can overwrite things like learning rate here
-    C.trainer.learning_rate = 5e-4
-    C.trainer.batch_size = 1
-    C.trainer.num_workers = 1
-
-    return C
-
-# if __name__ == '__main__':
-#     # get the config
-#     config = get_config()
-
-#     setup_logging(config)
-#     set_seed(config.system.seed)
-
-#     # create the data
-#     dataset = GPT2TokenizedDataset(JSONLDataset(config.data_path, length=10000)) # length=None means use all the data
-
-#     config.model.vocab_size = dataset.get_vocab_size()
-#     config.model.block_size = dataset.get_block_size()
-
-#     # create the model
-#     model = GPT(config.model)
-#     checkpoint = torch.load("/home/ansonsav/cs_674/project_2a_minGPT/minGPT/projects/project_2a_train_on_jsonl_files/out/project_2a_train_on_jsonl_files/iteration_3/checkpoint_1960000.pth")
-#     model.load_state_dict(checkpoint['model'])
-#     tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
-#     # input_tokens = torch.tensor(tokenizer("The quick brown fox", truncation=True, max_length=1024)['input_ids'], dtype=torch.long).unsqueeze(0)
-#     # output_tokens = model.generate(input_tokens, 100)
-#     # output_text = tokenizer.decode(output_tokens[0])
-#     # print(output_text)
-#     tester = MinGPTEval(model, tokenizer)
-#     results = tester.generate_until([DummyInstance(("The quick brown fox", {"until": [".", "\n\n"], "max_gen_toks": 200}))])
-#     print(results)
 
 
 
@@ -97,13 +63,37 @@ def evaluate_mingpt(model_path, tasks):
     )
     return results['results']
 
-tasks = ["boolq", "hellaswag", "anli", "arc_easy", "copa", "rte", "cb"]
-results = evaluate_mingpt("/home/ansonsav/cs_674/project_2a_minGPT/minGPT/projects/project_2a_train_on_jsonl_files/out/project_2a_train_on_jsonl_files/iteration_3/checkpoint_1960000.pth", tasks)
-print(results)
+def evaluate_model(model_path, tasks):
+    results = evaluate_mingpt(model_path, tasks)
+    print(results)
 
-for task in tasks:
-    print(f"Task: {task}")
-    try:
-        print(f"Accuracy: {results[task]['acc,none']}")
-    except KeyError as e:
-        print(e)
+    for task in tasks:
+        print(f"Task: {task}")
+        if 'acc,none' in results[task]:
+            print(f"Accuracy: {results[task]['acc,none']}")
+        else:
+            print(f"Accuracy key 'acc,none' not found for task: {task}")
+
+
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Evaluate GPT models on specified tasks.')
+    parser.add_argument('model_path', type=str, help='Path to the checkpoint file or directory containing checkpoints.')
+    args = parser.parse_args()
+
+    tasks = ["boolq", "hellaswag", "anli", "arc_easy", "copa", "rte", "cb"]
+
+    if os.path.isfile(args.model_path):
+        # Single file
+        print(f"Evaluating model: {args.model_path}")
+        evaluate_model(args.model_path, tasks)
+    elif os.path.isdir(args.model_path):
+        # Directory containing checkpoint files
+        checkpoint_files = glob.glob(os.path.join(args.model_path, '*.pth'))
+        checkpoint_files.sort()
+        for ckpt_file in checkpoint_files:
+            print(f"Evaluating model: {ckpt_file}")
+            evaluate_model(ckpt_file, tasks)
+    else:
+        print(f"Error: {args.model_path} is not a valid file or directory.")
