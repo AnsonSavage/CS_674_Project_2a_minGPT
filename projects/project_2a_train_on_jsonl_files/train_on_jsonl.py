@@ -61,14 +61,14 @@ if __name__ == '__main__':
         save_checkpoint_every_n = 10000
         evaluate_every_n = 10000
         if trainer.iter_num % print_every_n == 0:
-            print(f'iteration: {trainer.iter_num}')
+            print(f'iteration: {trainer.iter_num}', flush=True)
         
         if trainer.iter_num % save_checkpoint_every_n == 0:
             trainer.checkpoint(os.path.join(config.system.work_dir, f'checkpoint_{trainer.iter_num}.pth'))
         
         if trainer.iter_num % evaluate_every_n == 0:
             # Evaluate the model
-            print(trainer.loss_history[-1])
+            print(trainer.loss_history[-1], flush=True)
             
             try:
                 # Create a graph of the loss history
