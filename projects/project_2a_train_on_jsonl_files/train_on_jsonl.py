@@ -3,6 +3,7 @@ from gpt_2_tokenized_dataset import GPT2TokenizedDataset
 import os
 import matplotlib.pyplot as plt
 
+
 import sys
 sys.path.append('/home/ansonsav/cs_674/project_2a_minGPT/minGPT')
 
@@ -16,7 +17,7 @@ def get_config():
     # system
     C.system = CN()
     C.system.seed = 3407
-    C.system.work_dir = './out/project_2a_train_on_jsonl_files/mini'
+    C.system.work_dir = './out/project_2a_train_on_jsonl_files/iteration_4_full'
 
     # data
     C.data = GPT2TokenizedDataset.get_default_config()
@@ -24,8 +25,8 @@ def get_config():
 
     # model
     C.model = GPT.get_default_config()
-    # C.model.model_type = 'gpt2'
-    C.model.model_type = 'gpt-mini'
+    C.model.model_type = 'gpt2'
+    # C.model.model_type = 'gpt-mini'
 
     # trainer
     C.trainer = Trainer.get_default_config()

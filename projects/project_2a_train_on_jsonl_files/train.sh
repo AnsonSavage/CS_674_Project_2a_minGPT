@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1              # Number of processor cores (i.e., tasks)
 #SBATCH --gpus=1                  # Number of GPUs
 #SBATCH --mem-per-cpu=262144M       # Memory per CPU core
-#SBATCH -J "train_gpt2"   # Job name
+#SBATCH -J "train_gpt2_full_with_random_subsequence"   # Job name
 #SBATCH --mail-user=ansonsav@byu.edu             # Email address
 #SBATCH --mail-type=BEGIN,END,FAIL              # Email types
 #SBATCH --qos=dw87                                # Quality of Service
