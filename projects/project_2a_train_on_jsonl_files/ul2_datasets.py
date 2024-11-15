@@ -7,6 +7,8 @@ class DenoisingDataset(Dataset, ABC):
     """ Abstract class containing common functionality across denoising datasets.
 
     Each denoising dataset will have a GPT2TokenizedDataset (probably the same instance of it for efficiency)
+
+    A mixture of denoisers (50% PrefixLM [Sequential], 25% Extreme Denoising, and 25% Regular Span Corruption) will be used
     """
     def __init__(self, tokenized_dataset: GPT2TokenizedDataset, mode_token_string):
         self.tokenized_dataset = tokenized_dataset
@@ -26,12 +28,18 @@ class DenoisingDataset(Dataset, ABC):
     
 
 class RegularDenoisingDataset(DenoisingDataset):
-    """ Dataset that prepends the [NLU] token to the tokens and has a standard span corruption noise model
+    """ Prepends the [NLU] token to the tokens
+    Has a standard span corruption noise model
     It corrupts spans with a uniform mean of 3 and a corruption rate of 15%
     """
     pass
 
 class ExtremeDenoisingDataset(DenoisingDataset):
-    """ Dataset that prepends the [NLG] token to the tokens
+    """ Prepends the [NLG] token to the tokens
+    """
+    pass
+
+class SequentialDenoising(DenoisingDataset):
+    """ Prepends the [S2S] token to the tokens
     """
     pass
