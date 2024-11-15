@@ -14,9 +14,9 @@ class GPT2TokenizedDataset(Dataset):
         C.block_size = 1024
         return C
 
-    def __init__(self, text_based_dataset):
+    def __init__(self, text_based_dataset, tokenizer=None):
         self.text_based_dataset = text_based_dataset
-        self.tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+        self.tokenizer = GPT2Tokenizer.from_pretrained('gpt2') if tokenizer is None else tokenizer
         self.vocab_size = self.tokenizer.vocab_size
         self.block_size = GPT2TokenizedDataset.get_default_config().block_size
     
